@@ -1,4 +1,5 @@
 const User = require('#models/User');
+const Credit = require('#models/Credit');
 const authService = require('#services/auth.service');
 const bcryptService = require('#services/bcrypt.service');
 
@@ -19,6 +20,10 @@ const UsersController = () => {
 				password: body.password,
 			};
 			const user = await User.create(data);
+			await Credit.create({
+				userId: user.id,
+				value: 0,
+			});
 			const token = authService.issue({ id: user.id });
 			return res.status(200).json({
 				token,

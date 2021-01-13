@@ -19,7 +19,8 @@ const compression = require('compression');
 const config = require('#config/');
 const dbService = require('#services/db.service');
 const auth = require('#policies/auth.policy');
-
+// const pgClient = require('../config/pgClient');
+// const Credit = require('./models/Credit');
 // Environment: development, staging, testing, production
 const environment = process.env.NODE_ENV;
 
@@ -53,6 +54,18 @@ app.use(helmet({
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+//
+// pgClient.connect();
+// pgClient.query('LISTEN new_userevent');
+// pgClient.on('notification', async (data) => {
+// 	const payload = JSON.parse(data.payload);
+// 	console.log('New User created!', payload);
+// 	Credit.create({
+// 		userId: payload.id,
+// 		value: 0,
+// 	});
+// })
+
 // Secure private routes with jwt authentication middleware
 app.all('/api/private/*', (req, res, next) => auth(req, res, next));
 
@@ -72,7 +85,7 @@ server.listen(config.port, () => {
 	if (availableEnvironments.indexOf(environment) === -1) {
 		console.error(`NODE_ENV is set to ${environment}, but only ${availableEnvironments.toString()} are valid.`);
 		process.exit(1);
-	} 
+	}
 	else {
 		console.log('\x1b[1m', `server is running on port: ${config.port}`, '\x1b[0m');
 	}

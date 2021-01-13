@@ -14,28 +14,27 @@ module.exports = (req, res, next) => {
 
 			if (/^Bearer$/.test(scheme)) {
 				tokenToVerify = credentials;
-			} 
+			}
 			else {
 				return res.status(401).json({ msg: 'Format for Authorization: Bearer [token]' });
 			}
-		} 
+		}
 		else {
 			return res.status(401).json({ msg: 'Format for Authorization: Bearer [token]' });
 		}
-	} 
+	}
 	else if (req.body.token) {
 		tokenToVerify = req.body.token;
 		delete req.query.token;
-	} 
+	}
 	else {
 		return res.status(401).json({ msg: 'No Authorization was found' });
 	}
 
-	return JWTService.verify(tokenToVerify, (err, thisToken) => {
-		if (err) 
-			return res.status(401).json({ err });
-
+	return JWTService.verify(tokenToVerify).then((thisToken) => {
 		req.token = thisToken;
 		return next();
+	}).catch((err) => {
+		return res.status(401).json({ err });
 	});
 };
