@@ -1,6 +1,8 @@
 const Invite = require('#models/Invite');
 const User = require('#models/User');
 
+const { nanoid } = require("nanoid");
+
 const processError = (err, req, res) => {
 	return res.status(500).json({ msg: 'Internal server error' });
 };
@@ -33,13 +35,36 @@ const InviteController = () => {
 			const data = {
 				email: body.email,
                 userId: body.userId,
-                registered: false,
+				registered: false,
+				referalCode: nanoid(),
 			};
 			invite = await Invite.create(data);
 			return res.status(200).json({ invite });
 		}
 		catch(error){
 			console.error("InviteController.createInvite error: ", error.original);
+			return processError(error, req, res);
+		}
+	};
+
+	const getUserByReferalCode = async (req, res) => {
+		try{
+			const { body } = req;
+
+			const inviteQuery = {
+				where: {
+					referalCode: body.referalCode
+				}
+			}
+			let invite = await Invite.findOne(inviteQuery);
+			if (invite) {
+				return res.status(200).json({ invite });
+			} else {
+				return res.status(400).json({ msg: 'Bad Request: Referal Code is invalid' });
+			}
+		}
+		catch(error){
+			console.error("InviteController.getUserByReferalCode error: ", error.original);
 			return processError(error, req, res);
 		}
 	};
@@ -68,6 +93,7 @@ const InviteController = () => {
 
 	return {
 		createInvite,
+		getUserByReferalCode,
 		getAll
 	};
 };

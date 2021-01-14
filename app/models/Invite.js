@@ -18,6 +18,10 @@ const Invite = sequelize.define('Invite', {
 	registered: {
 		type: Sequelize.BOOLEAN,
 	},
+	referalCode: {
+		type: Sequelize.STRING,
+		unique: true,
+	},
 }, { hooks, tableName });
 
 

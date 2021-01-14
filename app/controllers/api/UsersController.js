@@ -1,5 +1,6 @@
 const User = require('#models/User');
 const Credit = require('#models/Credit');
+const Invite = require('#models/Invite');
 const authService = require('#services/auth.service');
 const bcryptService = require('#services/bcrypt.service');
 
@@ -20,11 +21,42 @@ const UsersController = () => {
 				password: body.password,
 			};
 			const user = await User.create(data);
-			await Credit.create({
-				userId: user.id,
-				value: 0,
-			});
 			const token = authService.issue({ id: user.id });
+
+			const { referalCode } = body;
+			if (referalCode) {
+				// user signed-up by referal link
+				// add 50 credits
+				const inviteQuery = {
+					where: {
+						referalCode
+					}
+				}
+				let invite = await Invite.findOne(inviteQuery);
+				if (invite && !invite.registered) {
+					await Credit.create({
+						userId: user.id,
+						value: 50,
+					});
+					await invite.update({
+						registered: true
+					})
+					// add some more
+				} else {
+					// already used referal link
+					await Credit.create({
+						userId: user.id,
+						value: 0,
+					});
+				}
+			} else {
+				// user doesn't sign-up by referal link
+				// 0 credit
+				await Credit.create({
+					userId: user.id,
+					value: 0,
+				});
+			}
 			return res.status(200).json({
 				token,
 				user
