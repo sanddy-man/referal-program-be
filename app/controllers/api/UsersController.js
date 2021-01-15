@@ -34,12 +34,22 @@ const UsersController = () => {
 				}
 				let invite = await Invite.findOne(inviteQuery);
 				if (invite && !invite.registered) {
+					// add 50 points for referal sign up
 					await Credit.create({
 						userId: user.id,
 						value: 50,
 					});
 					await invite.update({
 						registered: true
+					})
+					// give 10 points for the reference
+					const referalCredit = await Credit.findOne({
+						where: {
+							userId: invite.userId
+						}
+					})
+					referalCredit.update({
+						value: referalCredit.value + 10
 					})
 					// add some more
 				} else {
@@ -130,12 +140,22 @@ const UsersController = () => {
 		}
 	};
 
+	const claimCredits = async (req, res) => {
+		try {
+
+		} catch (error) {
+			console.error("UsersController.claimCredits error: ", { error });
+			return processError(error, req, res);
+		}
+	}
+
 
 	return {
 		register,
 		login,
 		validate,
-		getAll
+		getAll,
+		claimCredits,
 	};
 };
 
